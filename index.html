@@ -15,7 +15,14 @@
     }
     h1 { font-size: 20px; margin: 0 0 12px; }
     .meta { display: flex; gap: 10px; align-items: center; opacity: .75; font-size: 13px; }
-    .jp { font-size: 40px; line-height: 1.1; margin: 14px 0 6px; }
+    .jp {
+      font-size: 40px;
+      line-height: 1.1;
+      margin: 14px 0 6px;
+      cursor: pointer;
+      transition: opacity 0.2s ease;
+    }
+    .jp:hover { opacity: 0.6; }
     .kana { font-size: 18px; opacity: .8; }
     .romaji { font-size: 14px; opacity: .75; margin-top: 6px; }
     .meaning {
@@ -57,7 +64,9 @@
         <div class="tiny" id="counter"></div>
       </div>
 
-      <div class="jp" id="word"></div>
+      <!-- Clickable word: opens Cambridge JP-EN -->
+      <div class="jp" id="word" title="Click to open Cambridge Japanese–English dictionary"></div>
+
       <div class="kana" id="kana"></div>
       <div class="romaji" id="romaji"></div>
 
@@ -80,7 +89,7 @@
       </div>
 
       <div class="footer">
-        Tip: bookmark this file. You can edit the word list inside the code anytime.
+        Tip: bookmark this page. You can edit the word list inside the code anytime.
       </div>
 
       <details>
@@ -308,13 +317,21 @@ ${item.example_en || ""}`;
     alert("Reset to sample list.");
   }
 
-  // Buttons
+  // Button listeners
   el.btnNext.addEventListener("click", next);
   el.btnRandom.addEventListener("click", randomPick);
   el.btnReveal.addEventListener("click", toggleMeaning);
   el.btnCopy.addEventListener("click", copyAsText);
   el.btnLoad.addEventListener("click", loadFromJsonBox);
   el.btnReset.addEventListener("click", resetToSample);
+
+  // Make the WORD clickable -> opens Cambridge JP-EN
+  el.word.addEventListener("click", () => {
+    const item = list[idx];
+    const query = encodeURIComponent(item.word);
+    const url = `https://dictionary.cambridge.org/dictionary/japanese-english/${query}`;
+    window.open(url, "_blank");
+  });
 
   // Keyboard shortcuts
   document.addEventListener("keydown", (e) => {
