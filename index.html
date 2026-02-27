@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>One Japanese Word</title>
+  <style>
+    :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    body { margin: 0; background: #faf7ff; color: #1f1f1f; }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 22px; }
+    .card {
+      background: #fff; border-radius: 16px; padding: 18px;
+      box-shadow: 0 10px 24px rgba(0,0,0,.08);
+      border: 1px solid rgba(0,0,0,.06);
+    }
+    h1 { font-size: 20px; margin: 0 0 12px; }
+    .meta { display: flex; gap: 10px; align-items: center; opacity: .75; font-size: 13px; }
+    .jp { font-size: 40px; line-height: 1.1; margin: 14px 0 6px; }
+    .kana { font-size: 18px; opacity: .8; }
+    .romaji { font-size: 14px; opacity: .75; margin-top: 6px; }
+    .meaning {
+      margin-top: 12px; padding: 10px 12px; border-radius: 12px;
+      background: #f3f0ff; border: 1px solid rgba(88,63,255,.15);
+      display: none;
+    }
+    .meaning.show { display: block; }
+    .section { margin-top: 14px; }
+    .label { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; opacity: .6; margin-bottom: 6px; }
+    .example { background: #f7f7f7; border-radius: 12px; padding: 12px; border: 1px solid rgba(0,0,0,.06); }
+    .example .jpEx { font-size: 18px; }
+    .example .romEx, .example .enEx { opacity: .8; margin-top: 6px; font-size: 14px; }
+    .btns { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+    button {
+      border: 0; border-radius: 12px; padding: 10px 12px;
+      background: #5b3bff; color: #fff; cursor: pointer; font-weight: 600;
+    }
+    button.secondary { background: #e9e6ff; color: #2a2452; }
+    button:active { transform: translateY(1px); }
+    .footer { margin-top: 14px; font-size: 12px; opacity: .65; }
+    .tiny { font-size: 12px; opacity: .75; }
+    input, textarea {
+      width: 100%; border-radius: 12px; border: 1px solid rgba(0,0,0,.12);
+      padding: 10px 12px; font-size: 14px;
+    }
+    textarea { min-height: 110px; }
+    details { margin-top: 14px; }
+    summary { cursor: pointer; font-weight: 700; }
+    .grid { display: grid; gap: 10px; margin-top: 10px; }
+    @media (min-width: 640px) { .grid { grid-template-columns: 1fr 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="meta">
+        <div>🌸 One Japanese Word at a Time</div>
+        <div class="tiny" id="counter"></div>
+      </div>
+
+      <div class="jp" id="word"></div>
+      <div class="kana" id="kana"></div>
+      <div class="romaji" id="romaji"></div>
+
+      <div class="meaning" id="meaning"></div>
+
+      <div class="section">
+        <div class="label">Example</div>
+        <div class="example">
+          <div class="jpEx" id="exJp"></div>
+          <div class="romEx" id="exRomaji"></div>
+          <div class="enEx" id="exEn"></div>
+        </div>
+      </div>
+
+      <div class="btns">
+        <button id="btnReveal" class="secondary">Reveal meaning</button>
+        <button id="btnNext">Next</button>
+        <button id="btnRandom" class="secondary">Random</button>
+        <button id="btnCopy" class="secondary">Copy as text</button>
+      </div>
+
+      <div class="footer">
+        Tip: bookmark this file. You can edit the word list inside the code anytime.
+      </div>
+
+      <details>
+        <summary>➕ Add/replace words (paste JSON list)</summary>
+        <div class="tiny" style="margin-top:8px;">
+          Paste a JSON array (same format as the sample) then click “Load list”.
+        </div>
+        <div class="section grid">
+          <div>
+            <div class="label">Your JSON</div>
+            <textarea id="jsonBox">[
+  {
+    "word": "会いたい",
+    "kana": "あいたい",
+    "romaji": "aitai",
+    "meaning": "want to see (someone)",
+    "example_jp": "あなたに会いたい。",
+    "example_romaji": "Anata ni aitai.",
+    "example_en": "I want to see you."
+  },
+  {
+    "word": "頑張る",
+    "kana": "がんばる",
+    "romaji": "ganbaru",
+    "meaning": "to do one’s best",
+    "example_jp": "明日、試験があるから頑張る。",
+    "example_romaji": "Ashita, shiken ga aru kara ganbaru.",
+    "example_en": "I’ll do my best because I have a test tomorrow."
+  },
+  {
+    "word": "大丈夫",
+    "kana": "だいじょうぶ",
+    "romaji": "daijoubu",
+    "meaning": "it’s okay / I’m fine",
+    "example_jp": "大丈夫？うん、大丈夫。",
+    "example_romaji": "Daijoubu? Un, daijoubu.",
+    "example_en": "Are you okay? Yeah, I’m okay."
+  }
+]</textarea>
+          </div>
+          <div>
+            <div class="label">Controls</div>
+            <button id="btnLoad" class="secondary">Load list</button>
+            <button id="btnReset" class="secondary">Reset to sample</button>
+            <div class="tiny" style="margin-top:10px;">
+              Your list is saved in this browser (localStorage) so it stays next time.
+            </div>
+          </div>
+        </div>
+      </details>
+    </div>
+  </div>
+
+<script>
+  // --- Sample list (used if you haven't loaded your own) ---
+  const SAMPLE = [
+    {
+      word: "会いたい",
+      kana: "あいたい",
+      romaji: "aitai",
+      meaning: "want to see (someone)",
+      example_jp: "あなたに会いたい。",
+      example_romaji: "Anata ni aitai.",
+      example_en: "I want to see you."
+    },
+    {
+      word: "頑張る",
+      kana: "がんばる",
+      romaji: "ganbaru",
+      meaning: "to do one’s best",
+      example_jp: "明日、試験があるから頑張る。",
+      example_romaji: "Ashita, shiken ga aru kara ganbaru.",
+      example_en: "I’ll do my best because I have a test tomorrow."
+    },
+    {
+      word: "大丈夫",
+      kana: "だいじょうぶ",
+      romaji: "daijoubu",
+      meaning: "it’s okay / I’m fine",
+      example_jp: "大丈夫？うん、大丈夫。",
+      example_romaji: "Daijoubu? Un, daijoubu.",
+      example_en: "Are you okay? Yeah, I’m okay."
+    }
+  ];
+
+  // --- Storage helpers ---
+  const KEY_LIST = "jpWordList_v1";
+  const KEY_INDEX = "jpWordIndex_v1";
+
+  function loadList() {
+    try {
+      const raw = localStorage.getItem(KEY_LIST);
+      if (!raw) return SAMPLE;
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed) || parsed.length === 0) return SAMPLE;
+      return parsed;
+    } catch {
+      return SAMPLE;
+    }
+  }
+
+  function saveList(list) {
+    localStorage.setItem(KEY_LIST, JSON.stringify(list));
+  }
+
+  function loadIndex(max) {
+    const n = Number(localStorage.getItem(KEY_INDEX));
+    if (!Number.isFinite(n)) return 0;
+    return Math.min(Math.max(0, n), Math.max(0, max - 1));
+  }
+
+  function saveIndex(i) {
+    localStorage.setItem(KEY_INDEX, String(i));
+  }
+
+  // --- UI render ---
+  const el = {
+    counter: document.getElementById("counter"),
+    word: document.getElementById("word"),
+    kana: document.getElementById("kana"),
+    romaji: document.getElementById("romaji"),
+    meaning: document.getElementById("meaning"),
+    exJp: document.getElementById("exJp"),
+    exRomaji: document.getElementById("exRomaji"),
+    exEn: document.getElementById("exEn"),
+    btnReveal: document.getElementById("btnReveal"),
+    btnNext: document.getElementById("btnNext"),
+    btnRandom: document.getElementById("btnRandom"),
+    btnCopy: document.getElementById("btnCopy"),
+    btnLoad: document.getElementById("btnLoad"),
+    btnReset: document.getElementById("btnReset"),
+    jsonBox: document.getElementById("jsonBox"),
+  };
+
+  let list = loadList();
+  let idx = loadIndex(list.length);
+  let meaningShown = false;
+
+  function render() {
+    const item = list[idx];
+    el.counter.textContent = `Word ${idx + 1} / ${list.length}`;
+
+    el.word.textContent = item.word ?? "";
+    el.kana.textContent = item.kana ? `(${item.kana})` : "";
+    el.romaji.textContent = item.romaji ? item.romaji : "";
+
+    el.meaning.textContent = item.meaning ? `Meaning: ${item.meaning}` : "Meaning: —";
+    el.meaning.classList.toggle("show", meaningShown);
+
+    el.exJp.textContent = item.example_jp ?? "";
+    el.exRomaji.textContent = item.example_romaji ?? "";
+    el.exEn.textContent = item.example_en ?? "";
+
+    el.btnReveal.textContent = meaningShown ? "Hide meaning" : "Reveal meaning";
+  }
+
+  function next() {
+    idx = (idx + 1) % list.length;
+    saveIndex(idx);
+    meaningShown = false;
+    render();
+  }
+
+  function randomPick() {
+    if (list.length <= 1) return;
+    let r = idx;
+    while (r === idx) r = Math.floor(Math.random() * list.length);
+    idx = r;
+    saveIndex(idx);
+    meaningShown = false;
+    render();
+  }
+
+  async function copyAsText() {
+    const item = list[idx];
+    const text =
+`Word: ${item.word} (${item.kana || ""})
+Romaji: ${item.romaji || ""}
+Meaning: ${item.meaning || ""}
+
+Example: ${item.example_jp || ""}
+${item.example_romaji || ""}
+${item.example_en || ""}`;
+    try {
+      await navigator.clipboard.writeText(text);
+      el.btnCopy.textContent = "Copied!";
+      setTimeout(() => (el.btnCopy.textContent = "Copy as text"), 900);
+    } catch {
+      alert("Copy failed. You can select and copy manually.");
+    }
+  }
+
+  function toggleMeaning() {
+    meaningShown = !meaningShown;
+    render();
+  }
+
+  function loadFromJsonBox() {
+    try {
+      const parsed = JSON.parse(el.jsonBox.value);
+      if (!Array.isArray(parsed) || parsed.length === 0) {
+        alert("That JSON must be an array with at least 1 word object.");
+        return;
+      }
+      list = parsed;
+      saveList(list);
+      idx = 0;
+      saveIndex(idx);
+      meaningShown = false;
+      render();
+      alert("Loaded! Your list is saved in this browser.");
+    } catch (e) {
+      alert("Invalid JSON. Please check commas, quotes, and brackets.");
+    }
+  }
+
+  function resetToSample() {
+    list = SAMPLE;
+    saveList(list);
+    idx = 0;
+    saveIndex(idx);
+    meaningShown = false;
+    el.jsonBox.value = JSON.stringify(SAMPLE, null, 2);
+    render();
+    alert("Reset to sample list.");
+  }
+
+  // Buttons
+  el.btnNext.addEventListener("click", next);
+  el.btnRandom.addEventListener("click", randomPick);
+  el.btnReveal.addEventListener("click", toggleMeaning);
+  el.btnCopy.addEventListener("click", copyAsText);
+  el.btnLoad.addEventListener("click", loadFromJsonBox);
+  el.btnReset.addEventListener("click", resetToSample);
+
+  // Keyboard shortcuts
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowRight") next();
+    if (e.key.toLowerCase() === "r") randomPick();
+    if (e.key.toLowerCase() === "m") toggleMeaning();
+  });
+
+  render();
+</script>
+</body>
+</html>
