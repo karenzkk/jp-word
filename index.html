@@ -327,11 +327,11 @@ ${item.example_en || ""}`;
 
   // Make the WORD clickable -> opens Cambridge JP-EN
   el.word.addEventListener("click", () => {
-    const item = list[idx];
-    const query = encodeURIComponent(item.word);
-    const url = `https://dictionary.cambridge.org/dictionary/japanese-english/${query}`;
-    window.open(url, "_blank");
-  });
+  const item = list[idx];
+  const query = encodeURIComponent(item.word);
+  const url = `https://jisho.org/search/${query}`;
+  window.open(url, "_blank");
+});
 
   // Keyboard shortcuts
   document.addEventListener("keydown", (e) => {
